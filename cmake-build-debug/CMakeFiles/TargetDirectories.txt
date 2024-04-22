@@ -1,0 +1,3 @@
+/home/mhmd/CLionProjects/data-project-2024/cmake-build-debug/CMakeFiles/data_project_2024.dir
+/home/mhmd/CLionProjects/data-project-2024/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/mhmd/CLionProjects/data-project-2024/cmake-build-debug/CMakeFiles/rebuild_cache.dir
