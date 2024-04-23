@@ -25,9 +25,6 @@ struct user {
 struct userList {
     user *head, *tail;
 };
-
-
-
 char* strtok_r(char *str, const char *delim, char **nextp) {
     if (str == NULL) {
         str = *nextp;
@@ -44,7 +41,6 @@ char* strtok_r(char *str, const char *delim, char **nextp) {
     *nextp = str;
     return ret;
 }
-
 userList* parseFiles() {
     userList* uList = new userList();
     std::ifstream usersFile("users.txt");
@@ -256,72 +252,6 @@ void writeBackToFiles(userList* uList) {
     // Close the files
     usersFile.close();
     rentedCarsFile.close();
-}// Function to find the middle of the linked list
-user* getMiddle(user* head) {
-    if (head == nullptr) {
-        return head;
-    }
-    user* slow = head;
-    user* fast = head;
-    while (fast->next != nullptr && fast->next->next != nullptr) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    return slow;
-}
-
-// Function to merge two sorted linked lists
-user* merge(user* first, user* second) {
-    // If first linked list is empty
-    if (first == nullptr) {
-        return second;
-    }
-
-    // If second linked list is empty
-    if (second == nullptr) {
-        return first;
-    }
-
-    // Pick the smaller value and adjust the links
-    if (first->lname < second->lname) {
-        first->next = merge(first->next, second);
-        first->next->previous = first;
-        first->previous = nullptr;
-        return first;
-    } else {
-        second->next = merge(first, second->next);
-        second->next->previous = second;
-        second->previous = nullptr;
-        return second;
-    }
-}
-
-// Function to implement merge sort
-user* mergeSort(user* head) {
-    if (head == nullptr || head->next == nullptr) {
-        return head;
-    }
-    user* middle = getMiddle(head);
-    user* nextOfMiddle = middle->next;
-
-    middle->next = nullptr;
-    nextOfMiddle->previous = nullptr;
-
-    // Apply mergeSort on left list
-    user* left = mergeSort(head);
-
-    // Apply mergeSort on right list
-    user* right = mergeSort(nextOfMiddle);
-
-    // Merge the left and right lists
-    user* sortedList = merge(left, right);
-
-    return sortedList;
-}
-
-// Function to sort the user list
-void sortUserList(userList* uList) {
-    uList->head = mergeSort(uList->head);
 }
 void swap(user* a, user* b, userList* uList, user* previous) {
     if (previous != nullptr) {
@@ -358,18 +288,119 @@ void bubbleSort(userList* uList) {
         end = current;
     } while (swapped);
 }
+void rentCar(userList* uList, user* u, date* startDate, date* endDate) {
+    // Parse the cars.txt file to get the list of all cars
+    car* allCars = parseCarsFile();
 
+    // Display the available cars
+    std::cout << "Available cars:\n";
+    car* availableCar = allCars;
+    while (availableCar != nullptr) {
+        // Check if the car is rented by any user during the specified date range
+        bool isRented = false;
+        user* checkUser = uList->head;
+        while (checkUser != nullptr) {
+            car* checkCar = checkUser->rentedCar;
+            while (checkCar != nullptr) {
+                if (checkCar->plateNumber == availableCar->plateNumber &&
+                    ((checkCar->tDate->day >= startDate->day && checkCar->tDate->month >= startDate->month && checkCar->tDate->year >= startDate->year) &&
+                    (checkCar->tDate->next->day <= endDate->day && checkCar->tDate->next->month <= endDate->month && checkCar->tDate->next->year <= endDate->year))) {
+                    isRented = true;
+                    break;
+                }
+                checkCar = checkCar->next;
+            }
+            if (isRented) {
+                break;
+            }
+            checkUser = checkUser->next;
+        }
 
+        // If the car is not rented during the specified date range, print its details
+        if (!isRented) {
+            std::cout << "Car Name: " << availableCar->name << "\n";
+            std::cout << "Car Color: " << availableCar->color << "\n";
+            std::cout << "Car Plate Number: " << availableCar->plateNumber << "\n";
+        }
+
+        availableCar = availableCar->next;
+    }
+
+    // Ask the user to select a car
+    std::string plateNumber;
+    std::cout << "Enter the plate number of the car you want to rent: ";
+    std::cin >> plateNumber;
+
+    // Create a new car node and add it to the user's rentedCar list
+    car* newCar = new car();
+    newCar->plateNumber = plateNumber;
+    newCar->tDate = startDate;
+    startDate->next = endDate;
+    if (u->rentedCar == nullptr) {
+        u->rentedCar = newCar;
+    } else {
+        car* lastCar = u->rentedCar;
+        while (lastCar->next != nullptr) {
+            lastCar = lastCar->next;
+        }
+        lastCar->next = newCar;
+    }
+
+    // Write back the updated userList to the files
+    writeBackToFiles(uList);
+}
+void deleteRentedCarsBeforeDate(userList* uList, date* specifiedDate) {
+    // Get the current date
+    time_t t = time(0);
+    struct tm* now = localtime(&t);
+    date* currentDate = new date();
+    currentDate->day = now->tm_mday;
+    currentDate->month = now->tm_mon + 1;
+    currentDate->year = now->tm_year + 1900;
+
+    // Iterate over each user in the userList
+    user* currentUser = uList->head;
+    while (currentUser != nullptr) {
+        // Iterate over each car in the user's rentedCar list
+        car* currentCar = currentUser->rentedCar;
+        car* previousCar = nullptr;
+        while (currentCar != nullptr) {
+            // If the start date of the rented car is before the specified date and not before the current date
+            if ((currentCar->tDate->year < specifiedDate->year ||
+                (currentCar->tDate->year == specifiedDate->year && currentCar->tDate->month < specifiedDate->month) ||
+                (currentCar->tDate->year == specifiedDate->year && currentCar->tDate->month == specifiedDate->month && currentCar->tDate->day < specifiedDate->day)) &&
+                !(currentCar->tDate->year < currentDate->year ||
+                (currentCar->tDate->year == currentDate->year && currentCar->tDate->month < currentDate->month) ||
+                (currentCar->tDate->year == currentDate->year && currentCar->tDate->month == currentDate->month && currentCar->tDate->day < currentDate->day))) {
+                // Remove the car from the rentedCar list
+                if (previousCar == nullptr) {
+                    currentUser->rentedCar = currentCar->next;
+                } else {
+                    previousCar->next = currentCar->next;
+                }
+                car* tempCar = currentCar;
+                currentCar = currentCar->next;
+                delete tempCar;
+            } else {
+                previousCar = currentCar;
+                currentCar = currentCar->next;
+            }
+        }
+        currentUser = currentUser->next;
+    }
+
+    // Write back the updated userList to the files
+    writeBackToFiles(uList);
+}
 int main() {
     // Parse the files and get the user list
     userList* uList = parseFiles();
 
     // Print the user list
-    printUserList(uList);
 
     // Create a new user
     user* newUser = new user();
-    newUser->userID = 5;
+    newUser->userID = 7;
     newUser->fname = "New";
     newUser->lname = "User";
 
@@ -377,12 +408,27 @@ int main() {
     addUser(uList, newUser);
 
     // Print the updated user list
-    printUserList(uList);
+
     bubbleSort(uList);
-    printUserList(uList);
+
+
+    // Rent a car for the new user
+    date* startDate = new date();
+    startDate->day = 12;
+    startDate->month = 3;
+    startDate->year = 2024;
+
+    date* endDate = new date();
+    endDate->day = 20;
+    endDate->month = 3;
+    endDate->year = 2024;
+
+    rentCar(uList, newUser, startDate, endDate);
+    cout<<"hello";
+    // Print the updated user list
+
     // Write the updated user list back to the files
     writeBackToFiles(uList);
-
+    cout<<"hello";
     return 0;
 }
-
