@@ -243,7 +243,7 @@ void writeBackToFiles(userList* uList) {
                     currentDate = currentDate->next;
                 }
                 if (currentCar->next != nullptr) {
-                    rentedCarsFile << ", ";
+                    rentedCarsFile << ","; // Removed the space after the comma
                 }
                 currentCar = currentCar->next;
             }
@@ -256,8 +256,7 @@ void writeBackToFiles(userList* uList) {
     // Close the files
     usersFile.close();
     rentedCarsFile.close();
-}
-// Function to find the middle of the linked list
+}// Function to find the middle of the linked list
 user* getMiddle(user* head) {
     if (head == nullptr) {
         return head;
@@ -324,6 +323,43 @@ user* mergeSort(user* head) {
 void sortUserList(userList* uList) {
     uList->head = mergeSort(uList->head);
 }
+void swap(user* a, user* b, userList* uList, user* previous) {
+    if (previous != nullptr) {
+        previous->next = b;
+    } else {
+        uList->head = b;
+    }
+
+    a->next = b->next;
+    b->next = a;
+}
+void bubbleSort(userList* uList) {
+    bool swapped;
+    user *current;
+    user *previous = nullptr;
+    user *end = nullptr;
+
+    if (uList->head == nullptr) {
+        return;
+    }
+
+    do {
+        swapped = false;
+        current = uList->head;
+
+        while (current->next != end) {
+            if (current->lname > current->next->lname) {
+                swap(current, current->next, uList, previous);
+                swapped = true;
+            }
+            previous = current;
+            current = current->next;
+        }
+        end = current;
+    } while (swapped);
+}
+
+
 int main() {
     // Parse the files and get the user list
     userList* uList = parseFiles();
@@ -342,7 +378,8 @@ int main() {
 
     // Print the updated user list
     printUserList(uList);
-
+    bubbleSort(uList);
+    printUserList(uList);
     // Write the updated user list back to the files
     writeBackToFiles(uList);
 
