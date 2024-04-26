@@ -2,7 +2,7 @@
 #include <fstream>
 #include <cstring>
 #include <sstream>
-
+#include <ctime>
 using namespace std;
 struct date {
     int day, month, year;
@@ -43,18 +43,18 @@ char* strtok_r(char *str, const char *delim, char **nextp) {
 }
 userList* parseFiles() {
     userList* uList = new userList();
-    std::ifstream usersFile("users.txt");
-    std::string line;
-    while (std::getline(usersFile, line)) {
+    ifstream usersFile("users.txt");
+    string line;
+    while (getline(usersFile, line)) {
         char* next_token1 = NULL;
         char* token = strtok_r(&line[0], ",", &next_token1);
         user* newUser = new user();
-        newUser->userID = std::stoi(token);
+        newUser->userID = stoi(token);
         token = strtok_r(NULL, ",", &next_token1);
         newUser->fname = token;
         token = strtok_r(NULL, ",", &next_token1);
         newUser->lname = token;
-        // Add the new user to the userList
+        // zid user
         if (uList->head == nullptr) {
             uList->head = newUser;
             uList->tail = newUser;
@@ -64,13 +64,13 @@ userList* parseFiles() {
             uList->tail = newUser;
         }
 
-        // Open the rented_cars.txt file and search for the current user's rented cars
-        std::ifstream rentedCarsFile("rented_cars.txt");
-        std::string rentedCarLine;
-        while (std::getline(rentedCarsFile, rentedCarLine)) {
+        // open the rented_cars
+        ifstream rentedCarsFile("rented_cars.txt");
+        string rentedCarLine;
+        while (getline(rentedCarsFile, rentedCarLine)) {
             char* next_token2 = NULL;
             char* rentedCarToken = strtok_r(&rentedCarLine[0], ":", &next_token2);
-            int rentedUserID = std::stoi(rentedCarToken);
+            int rentedUserID = stoi(rentedCarToken);
             if (rentedUserID == newUser->userID) {
                 rentedCarToken = strtok_r(NULL, ":", &next_token2);
                 char* next_token3 = NULL;
@@ -93,29 +93,29 @@ userList* parseFiles() {
                         newDate->next = returnDate;
                     }
 
-                    // Open the cars.txt file and search for the car details
-                    std::ifstream carsFile("cars.txt");
-                    std::string carLine;
-                    while (std::getline(carsFile, carLine)) {
-                        std::istringstream iss(carLine);
-                        std::string carToken;
-                        std::getline(iss, carToken, ',');
+                    // open the cars
+                    ifstream carsFile("cars.txt");
+                    string carLine;
+                    while (getline(carsFile, carLine)) {
+                        istringstream iss(carLine);
+                        string carToken;
+                        getline(iss, carToken, ',');
                         carToken.erase(0, carToken.find_first_not_of(' ')); // trim leading whitespace
                         carToken.erase(carToken.find_last_not_of(' ') + 1); // trim trailing whitespace
-                        std::string plateNumber = newCar->plateNumber;
+                        string plateNumber = newCar->plateNumber;
                         plateNumber.erase(0, plateNumber.find_first_not_of(' ')); // trim leading whitespace
                         plateNumber.erase(plateNumber.find_last_not_of(' ') + 1); // trim trailing whitespace
                         if (plateNumber == carToken) {
-                            std::getline(iss, carToken, ',');
+                            getline(iss, carToken, ',');
                             newCar->name = carToken;
-                            std::getline(iss, carToken, ',');
+                            getline(iss, carToken, ',');
                             newCar->color = carToken;
                             break;
                         }
                     }
                     carsFile.close();
 
-                    // Add the new car to the user's rentedCar list
+                    // add car to list
                     if (newUser->rentedCar == nullptr) {
                         newUser->rentedCar = newCar;
                     } else {
@@ -138,17 +138,17 @@ userList* parseFiles() {
 void printUserList(userList* uList) {
     user* currentUser = uList->head;
     while (currentUser != nullptr) {
-        std::cout << "User ID: " << currentUser->userID << "\n";
-        std::cout << "First Name: " << currentUser->fname << "\n";
-        std::cout << "Last Name: " << currentUser->lname << "\n";
+        cout << "User ID: " << currentUser->userID << "\n";
+        cout << "First Name: " << currentUser->fname << "\n";
+        cout << "Last Name: " << currentUser->lname << "\n";
         car* currentCar = currentUser->rentedCar;
         while (currentCar != nullptr) {
-            std::cout << "Car Name: " << currentCar->name << "\n";
-            std::cout << "Car Color: " << currentCar->color << "\n";
-            std::cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
+            cout << "Car Name: " << currentCar->name << "\n";
+            cout << "Car Color: " << currentCar->color << "\n";
+            cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
             date* currentDate = currentCar->tDate;
             while (currentDate != nullptr) {
-                std::cout << "Date: " << currentDate->day << "-" << currentDate->month << "-" << currentDate->year << "\n";
+                cout << "Date: " << currentDate->day << "-" << currentDate->month << "-" << currentDate->year << "\n";
                 currentDate = currentDate->next;
             }
             currentCar = currentCar->next;
@@ -157,11 +157,11 @@ void printUserList(userList* uList) {
     }
 }
 void addUser(userList* uList, user* newUser) {
-    // Check if the user already exists in the userList
+    // if the user mawjoud
     user* currentUser = uList->head;
     while (currentUser != nullptr) {
         if (currentUser->userID == newUser->userID) {
-            std::cout << "User with ID: " << newUser->userID << " already exists.\n";
+            cout << "User with ID: " << newUser->userID << " already exists.\n";
             return;
         }
         currentUser = currentUser->next;
@@ -178,19 +178,19 @@ void addUser(userList* uList, user* newUser) {
     }
 }
 car* parseCarsFile() {
-    std::ifstream carsFile("cars.txt");
-    std::string line;
+    ifstream carsFile("cars.txt");
+    string line;
     car* head = nullptr;
     car* tail = nullptr;
-    while (std::getline(carsFile, line)) {
-        std::istringstream iss(line);
-        std::string token;
+    while (getline(carsFile, line)) {
+        istringstream iss(line);
+        string token;
         car* newCar = new car();
-        std::getline(iss, token, ',');
+        getline(iss, token, ',');
         newCar->plateNumber = token;
-        std::getline(iss, token, ',');
+        getline(iss, token, ',');
         newCar->name = token;
-        std::getline(iss, token, ',');
+        getline(iss, token, ',');
         newCar->color = token;
         newCar->next = nullptr;
         if (head == nullptr) {
@@ -207,21 +207,21 @@ car* parseCarsFile() {
 void printCarList(car* head) {
     car* currentCar = head;
     while (currentCar != nullptr) {
-        std::cout << "Car Name: " << currentCar->name << "\n";
-        std::cout << "Car Color: " << currentCar->color << "\n";
-        std::cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
+        cout << "Car Name: " << currentCar->name << "\n";
+        cout << "Car Color: " << currentCar->color << "\n";
+        cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
         currentCar = currentCar->next;
     }
 }
 void writeBackToFiles(userList* uList) {
-    // Open the users.txt file in write mode
-    std::ofstream usersFile("users.txt");
-    // Open the rented_cars.txt file in write mode
-    std::ofstream rentedCarsFile("rented_cars.txt");
+    // Open the users
+    ofstream usersFile("users.txt");
+    // Open the rented_cars
+    ofstream rentedCarsFile("rented_cars.txt");
 
     user* currentUser = uList->head;
     while (currentUser != nullptr) {
-        // Write the user details to the users.txt file
+        // write   user detail to the users
         usersFile << currentUser->userID << "," << currentUser->fname << "," << currentUser->lname << "\n";
 
         // Only write the user's rented cars to the rented_cars.txt file if the user has rented cars
@@ -239,7 +239,7 @@ void writeBackToFiles(userList* uList) {
                     currentDate = currentDate->next;
                 }
                 if (currentCar->next != nullptr) {
-                    rentedCarsFile << ","; // Removed the space after the comma
+                    rentedCarsFile << ","; // remouve " " baad rl ,
                 }
                 currentCar = currentCar->next;
             }
@@ -292,11 +292,11 @@ void rentCar(userList* uList, user* u, date* startDate, date* endDate) {
     // Parse the cars.txt file to get the list of all cars
     car* allCars = parseCarsFile();
 
-    // Display the available cars
-    std::cout << "Available cars:\n";
+    // cout <<carss
+    cout << "Available cars:\n";
     car* availableCar = allCars;
     while (availableCar != nullptr) {
-        // Check if the car is rented by any user during the specified date range
+        // Check if the car hada hejiza
         bool isRented = false;
         user* checkUser = uList->head;
         while (checkUser != nullptr) {
@@ -318,20 +318,20 @@ void rentCar(userList* uList, user* u, date* startDate, date* endDate) {
 
         // If the car is not rented during the specified date range, print its details
         if (!isRented) {
-            std::cout << "Car Name: " << availableCar->name << "\n";
-            std::cout << "Car Color: " << availableCar->color << "\n";
-            std::cout << "Car Plate Number: " << availableCar->plateNumber << "\n";
+            cout << "Car Name: " << availableCar->name << "\n";
+            cout << "Car Color: " << availableCar->color << "\n";
+            cout << "Car Plate Number: " << availableCar->plateNumber << "\n";
         }
 
         availableCar = availableCar->next;
     }
 
-    // Ask the user to select a car
-    std::string plateNumber;
-    std::cout << "Enter the plate number of the car you want to rent: ";
-    std::cin >> plateNumber;
+    // ask the user to select a car
+    string plateNumber;
+    cout << "Enter the plate number of the car you want to rent: ";
+    cin >> plateNumber;
 
-    // Create a new car node and add it to the user's rentedCar list
+    // create a new car node and add it to the user's rentedCar list
     car* newCar = new car();
     newCar->plateNumber = plateNumber;
     newCar->tDate = startDate;
@@ -346,41 +346,60 @@ void rentCar(userList* uList, user* u, date* startDate, date* endDate) {
         lastCar->next = newCar;
     }
 
-    // Write back the updated userList to the files
-    writeBackToFiles(uList);
+
+}
+void addNewCar() {
+    // Create a new car object
+    car* newCar = new car;
+
+
+    cout << "Enter the plate number of the new car: ";
+    cin >> newCar->plateNumber;
+    cout << "Enter the name of the new car: ";
+    cin >> newCar->name;
+    cout << "Enter the color of the new car: ";
+    cin >> newCar->color;
+
+
+    ofstream carsFile("cmake-build-debug/cars.txt", ios_base::app);
+
+
+    carsFile << newCar->plateNumber << "," << newCar->name << "," << newCar->color << "\n";
+
+
+    carsFile.close();
 }
 void deleteRentedCarsBeforeDate(userList* uList, date* specifiedDate) {
-    // Get the current date
-    time_t t = time(0);
-    struct tm* now = localtime(&t);
+    // get the current date
+    time_t t = time(0);   // get time now
+    tm* now = localtime(&t);
     date* currentDate = new date();
     currentDate->day = now->tm_mday;
     currentDate->month = now->tm_mon + 1;
     currentDate->year = now->tm_year + 1900;
 
-    // Iterate over each user in the userList
+    // Iterate over the userList
     user* currentUser = uList->head;
     while (currentUser != nullptr) {
-        // Iterate over each car in the user's rentedCar list
+        // Iterate over the rented cars of the current user
         car* currentCar = currentUser->rentedCar;
         car* previousCar = nullptr;
         while (currentCar != nullptr) {
-            // If the start date of the rented car is before the specified date and not before the current date
+            // Check if the start date of the rented car is before the specified date and after the current date
             if ((currentCar->tDate->year < specifiedDate->year ||
-                (currentCar->tDate->year == specifiedDate->year && currentCar->tDate->month < specifiedDate->month) ||
-                (currentCar->tDate->year == specifiedDate->year && currentCar->tDate->month == specifiedDate->month && currentCar->tDate->day < specifiedDate->day)) &&
-                !(currentCar->tDate->year < currentDate->year ||
-                (currentCar->tDate->year == currentDate->year && currentCar->tDate->month < currentDate->month) ||
-                (currentCar->tDate->year == currentDate->year && currentCar->tDate->month == currentDate->month && currentCar->tDate->day < currentDate->day))) {
-                // Remove the car from the rentedCar list
-                if (previousCar == nullptr) {
-                    currentUser->rentedCar = currentCar->next;
-                } else {
+                 (currentCar->tDate->year == specifiedDate->year && currentCar->tDate->month < specifiedDate->month) ||
+                 (currentCar->tDate->year == specifiedDate->year && currentCar->tDate->month == specifiedDate->month && currentCar->tDate->day < specifiedDate->day)) &&
+                (currentCar->tDate->year > currentDate->year ||
+                 (currentCar->tDate->year == currentDate->year && currentCar->tDate->month > currentDate->month) ||
+                 (currentCar->tDate->year == currentDate->year && currentCar->tDate->month == currentDate->month && currentCar->tDate->day > currentDate->day))) {
+                // Delete the rented car
+                if (previousCar != nullptr) {
                     previousCar->next = currentCar->next;
+                } else {
+                    currentUser->rentedCar = currentCar->next;
                 }
-                car* tempCar = currentCar;
-                currentCar = currentCar->next;
-                delete tempCar;
+                delete currentCar;
+                currentCar = previousCar != nullptr ? previousCar->next : currentUser->rentedCar;
             } else {
                 previousCar = currentCar;
                 currentCar = currentCar->next;
@@ -388,47 +407,342 @@ void deleteRentedCarsBeforeDate(userList* uList, date* specifiedDate) {
         }
         currentUser = currentUser->next;
     }
-
-    // Write back the updated userList to the files
-    writeBackToFiles(uList);
 }
-int main() {
-    // Parse the files and get the user list
-    userList* uList = parseFiles();
+void printUsersFromFile() {
 
-    // Print the user list
-
-    // Create a new user
-    user* newUser = new user();
-    newUser->userID = 7;
-    newUser->fname = "New";
-    newUser->lname = "User";
-
-    // Add the new user to the user list
-    addUser(uList, newUser);
-
-    // Print the updated user list
-
-    bubbleSort(uList);
+    ifstream usersFile("users.txt");
+    string line;
 
 
-    // Rent a car for the new user
+    while (getline(usersFile, line)) {
+        istringstream iss(line);
+        string token;
+
+
+        getline(iss, token, ',');
+        int userID = stoi(token);
+
+
+        getline(iss, token, ',');
+        string firstName = token;
+
+
+        getline(iss, token, ',');
+        string lastName = token;
+
+
+        cout << "User ID: " << userID << "\n";
+        cout << "First Name: " << firstName << "\n";
+        cout << "Last Name: " << lastName << "\n";
+    }
+
+
+    usersFile.close();
+}
+void rentCarProcess(userList* uList) {
+
+    printUsersFromFile();
+
+
+    int userID;
+    user* u = nullptr;
+    do {
+        cout << "Enter user ID or -1 to exit: ";
+        cin >> userID;
+
+
+        if (userID == -1) {
+            return;
+        }
+
+        u = uList->head;
+        while (u != nullptr && u->userID != userID) {
+            u = u->next;
+        }
+        if (u == nullptr) {
+            cout << "User with ID: " << userID << " does not exist.\n";
+        }
+    } while (u == nullptr);
+
+
     date* startDate = new date();
-    startDate->day = 12;
-    startDate->month = 3;
-    startDate->year = 2024;
+    cout << "Enter start date (day month year): ";
+    cin >> startDate->day >> startDate->month >> startDate->year;
+
 
     date* endDate = new date();
-    endDate->day = 20;
-    endDate->month = 3;
-    endDate->year = 2024;
+    cout << "Enter end date (day month year): ";
+    cin >> endDate->day >> endDate->month >> endDate->year;
 
-    rentCar(uList, newUser, startDate, endDate);
-    cout<<"hello";
-    // Print the updated user list
 
-    // Write the updated user list back to the files
+    rentCar(uList, u, startDate, endDate);
+
+
+    printUserList(uList);
+}
+void addNewUserProcess(userList* uList) {
+
+    user* newUser = new user;
+
+    cout << "Enter the ID of the new user: ";
+    cin >> newUser->userID;
+    cout << "Enter the first name of the new user: ";
+    cin >> newUser->fname;
+    cout << "Enter the last name of the new user: ";
+    cin >> newUser->lname;
+
+    addUser(uList, newUser);
+
     writeBackToFiles(uList);
-    cout<<"hello";
+}
+void displayAllCarsProcess() {
+    car* allCars = parseCarsFile();
+
+    printCarList(allCars);
+}
+void deleteRentedCarsProcess(userList* uList) {
+    date* specifiedDate = new date();
+    cout << "Enter date (day month year): ";
+    cin >> specifiedDate->day >> specifiedDate->month >> specifiedDate->year;
+
+    deleteRentedCarsBeforeDate(uList, specifiedDate);
+}
+void sortUserList(userList* uList) {
+    if (uList->head == nullptr || uList->head->next == nullptr) {
+        return;
+    }
+
+    bool swapped;
+    do {
+        swapped = false;
+        user* current = uList->head;
+        user* previous = nullptr;
+        user* next = current->next;
+
+        while (next != nullptr) {
+            if (current->lname > next->lname) {
+                // Swap current and next nodes
+                swapped = true;
+                if (previous != nullptr) {
+                    // This is not the first node
+                    previous->next = next;
+                } else {
+                    // This is the first node, update the head
+                    uList->head = next;
+                }
+                // Swap next and current
+                current->next = next->next;
+                next->next = current;
+
+                // Update previous and current
+                previous = next;
+                next = current->next;
+            } else {
+                // Move to the next pair
+                previous = current;
+                current = next;
+                next = next->next;
+            }
+        }
+    } while (swapped);
+}
+void displayUserInfo(userList* uList, int userID) {
+    // Find the user with the given ID in the user list
+    user* u = uList->head;
+    while (u != nullptr && u->userID != userID) {
+        u = u->next;
+    }
+
+    // If the user is found, print their details
+    if (u != nullptr) {
+        cout << "User ID: " << u->userID << "\n";
+        cout << "First Name: " << u->fname << "\n";
+        cout << "Last Name: " << u->lname << "\n";
+
+        // Print the details of the user's rented cars
+        car* currentCar = u->rentedCar;
+        int carID = 1;
+        while (currentCar != nullptr) {
+            cout << "Car ID: " << carID << "\n";
+            cout << "Car Name: " << currentCar->name << "\n";
+            cout << "Car Color: " << currentCar->color << "\n";
+            cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
+            date* currentDate = currentCar->tDate;
+            while (currentDate != nullptr) {
+                cout << "Date: " << currentDate->day << "-" << currentDate->month << "-" << currentDate->year << "\n";
+                currentDate = currentDate->next;
+            }
+            currentCar = currentCar->next;
+            carID++;
+        }
+    } else {
+        cout << "User with ID: " << userID << " does not exist.\n";
+    }
+}
+void filterCarsByColor(string color) {
+    car* allCars = parseCarsFile();
+
+    car* currentCar = allCars;
+    while (currentCar != nullptr) {
+        // If the car's color matches the specified color, print the car's details
+        if (currentCar->color == color) {
+            cout << "Car Name: " << currentCar->name << "\n";
+            cout << "Car Color: " << currentCar->color << "\n";
+            cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
+        }
+        currentCar = currentCar->next;
+    }
+}
+void searchRentedCarsOnDate(userList* uList, date* searchDate) {
+    // Iterate over the userList
+    user* currentUser = uList->head;
+    while (currentUser != nullptr) {
+        // Iterate over the rented cars of the current user
+        car* currentCar = currentUser->rentedCar;
+        while (currentCar != nullptr) {
+            // Check if the rented car's date range includes the specified date
+            if ((currentCar->tDate->year < searchDate->year ||
+                 (currentCar->tDate->year == searchDate->year && currentCar->tDate->month < searchDate->month) ||
+                 (currentCar->tDate->year == searchDate->year && currentCar->tDate->month == searchDate->month && currentCar->tDate->day <= searchDate->day)) &&
+                (currentCar->tDate->next->year > searchDate->year ||
+                 (currentCar->tDate->next->year == searchDate->year && currentCar->tDate->next->month > searchDate->month) ||
+                 (currentCar->tDate->next->year == searchDate->year && currentCar->tDate->next->month == searchDate->month && currentCar->tDate->next->day >= searchDate->day))) {
+                // Print the user's and car's details
+                cout << "User ID: " << currentUser->userID << "\n";
+                cout << "First Name: " << currentUser->fname << "\n";
+                cout << "Last Name: " << currentUser->lname << "\n";
+                cout << "Car Name: " << currentCar->name << "\n";
+                cout << "Car Color: " << currentCar->color << "\n";
+                cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
+            }
+            currentCar = currentCar->next;
+        }
+        currentUser = currentUser->next;
+    }
+}
+void deleteRentedCar(userList* uList, int userID) {
+    // Find the user with the given ID in the user list
+    user* u = uList->head;
+    while (u != nullptr && u->userID != userID) {
+        u = u->next;
+    }
+
+    // If the user is found, print their rented cars and ask which one to delete
+    if (u != nullptr) {
+        car* currentCar = u->rentedCar;
+        int carID = 1;
+        while (currentCar != nullptr) {
+            cout << "Car ID: " << carID << "\n";
+            cout << "Car Name: " << currentCar->name << "\n";
+            cout << "Car Color: " << currentCar->color << "\n";
+            cout << "Car Plate Number: " << currentCar->plateNumber << "\n";
+            date* currentDate = currentCar->tDate;
+            while (currentDate != nullptr) {
+                cout << "Date: " << currentDate->day << "-" << currentDate->month << "-" << currentDate->year << "\n";
+                currentDate = currentDate->next;
+            }
+            currentCar = currentCar->next;
+            carID++;
+        }
+
+        int deleteCarID;
+        cout << "Enter the car ID of the reservation you want to delete: ";
+        cin >> deleteCarID;
+
+        currentCar = u->rentedCar;
+        car* previousCar = nullptr;
+        int currentCarID = 1;
+        while (currentCar != nullptr && currentCarID != deleteCarID) {
+            previousCar = currentCar;
+            currentCar = currentCar->next;
+            currentCarID++;
+        }
+        if (currentCar != nullptr) {
+            if (previousCar != nullptr) {
+                previousCar->next = currentCar->next;
+            } else {
+                u->rentedCar = currentCar->next;
+            }
+            delete currentCar;
+            cout << "Reservation with Car ID: " << deleteCarID << " has been deleted.\n";
+        } else {
+            cout << "Reservation with Car ID: " << deleteCarID << " does not exist.\n";
+        }
+    } else {
+        cout << "User with ID: " << userID << " does not exist.\n";
+    }
+}
+int main() {
+    userList* uList = parseFiles();
+    sortUserList(uList);
+    int choice;
+    string color;
+
+    do {
+        cout << "\n==================== MENU ====================\n";
+        cout << " 1. Add a new user\n";
+        cout << " 2. Display user info\n";
+        cout << " 3. Add a new car\n";
+        cout << " 4. Display all cars\n";
+        cout << " 5. Filter cars by color\n";
+        cout << " 6. Rent a car\n";
+        cout << " 7. Delete a rented car\n";
+        cout << " 8. Delete rented cars before a specified date\n";
+        cout << " 9. Search for rented cars on a specific date\n";
+        cout << "10. Save changes\n";
+        cout << " 0. Exit\n";
+        cout << "==============================================\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch(choice) {
+            case 1:
+                addNewUserProcess(uList);
+                break;
+            case 2:
+                printUserList(uList);
+                break;
+            case 3:
+                addNewCar();
+                break;
+            case 4:
+                displayAllCarsProcess();
+                break;
+            case 5:
+                cout << "Enter the color: ";
+                cin >> color;
+                filterCarsByColor(color);
+                break;
+            case 6:
+                rentCarProcess(uList);
+                break;
+            case 7:
+                int userID;
+                cout << "Enter the user ID: ";
+                cin >> userID;
+                deleteRentedCar(uList, userID);
+                break;
+            case 8:
+                deleteRentedCarsProcess(uList);
+                break;
+            case 9:
+                date searchDate;
+                cout << "Enter the date (day month year): ";
+                cin >> searchDate.day >> searchDate.month >> searchDate.year;
+                searchRentedCarsOnDate(uList, &searchDate);
+                break;
+            case 10:
+                writeBackToFiles(uList);
+                cout << "Changes saved successfully.\n";
+                break;
+            case 0:
+                cout << "Exiting the program.\n";
+                break;
+            default:
+                cout << "Invalid choice.\n";
+                break;
+        }
+    } while (choice != 0);
+
     return 0;
 }
